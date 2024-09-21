@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Email_template, Exam_session, Management
+from models import db, User, Email_template, Management
 
 
 app = Flask(__name__)
@@ -64,18 +64,18 @@ def login_test():
                 return jsonify(test)
 
 
-@app.route('/email/new', methods=['POST'])
-def add_newEmail():
-        request_body=request.json  
-        test_email= Exam_session.query.filter_by(id=request_body['id']).first()
-        test=False 
-        if test_email is None:
-            newExam=Exam_session (name= request_body['name'], content= request_body['content'], Category=request_body['1'])
-            db.session.add(newExam)
-            db.session.commit()
-            return jsonify(f"Success"), 200 
-        else:     
-             return jsonify(test), 450 #it exist already
+# @app.route('/email/new', methods=['POST'])
+# def add_newEmail():
+#         request_body=request.json  
+#         test_email= Exam_session.query.filter_by(id=request_body['id']).first()
+#         test=False 
+#         if test_email is None:
+#             newExam=Exam_session (name= request_body['name'], content= request_body['content'], Category=request_body['1'])
+#             db.session.add(newExam)
+#             db.session.commit()
+#             return jsonify(f"Success"), 200 
+#         else:     
+#              return jsonify(test), 450 #it exist already
 
 
 

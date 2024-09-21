@@ -55,13 +55,10 @@ class Category(db.Model):
 
 class Email_template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(120), unique=True, nullable=False)
+    content = db.Column(db.String(1200), nullable=False)
     name= db.Column(db.String(120), unique=True, nullable=False)
-    header= db.Column(db.String(120), nullable=True)
     subject= db.Column(db.String(120), nullable=True)
-    body= db.Column(db.String(120), nullable=True)
     link= db.Column(db.String(120), nullable=True)
-    closure= db.Column(db.String(120), nullable=True)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)    
     category_link = db.relationship('Category')
     def __repr__(self):
@@ -77,20 +74,20 @@ class Email_template(db.Model):
         }
     
 
-class Exam_session(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    score = db.Column(db.Integer, unique=True, nullable=False)
-    date = db.Column(db.String(120), nullable=False)
-    employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)    
-    employee_link = db.relationship('User')
-    def __repr__(self):
-        return self.id
+# class Exam_session(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     score = db.Column(db.Integer, unique=True, nullable=False)
+#     date = db.Column(db.String(120), nullable=False)
+#     employee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)    
+#     employee_link = db.relationship('User')
+#     def __repr__(self):
+#         return self.id
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "score": self.score,
-             "date": self.date,
-             "employee_id": self.employee_id
-            # do not serialize the password, its a security breach
-        }
+#     def serialize(self):
+#         return {
+#             "id": self.id,
+#             "score": self.score,
+#              "date": self.date,
+#              "employee_id": self.employee_id
+#             # do not serialize the password, its a security breach
+#         }
