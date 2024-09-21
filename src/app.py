@@ -4,12 +4,11 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 import os
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
-from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
-#from models import Person
+from models import db, User, Email_template, Exam_session,Category
+
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -36,14 +35,89 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
 
-    return jsonify(response_body), 200
+# @app.route('/employee/login/', methods=['post'])
+# def post_employee_login():
+#     request_body=request.json
+#     print(request_body)
+#     response_body =True
+#     return jsonify(response_body), 200
+
+
+
+@app.route('/employee/login', methods=['POST'])
+def login_test():
+        request_body=request.json
+        
+        test_user= User.query.filter_by(email=request_body['username']).first()
+        test=False 
+        if test_user is None:
+           return jsonify(test)
+           
+        
+        test_password= User.query.filter_by(email=request_body['username']).first().password
+        #test_name= User.query.filter_by(email=request_body[0]).first().fullname
+    
+        if str(test_password)==request_body['password']:  
+                test=True          
+                return jsonify(test)
+
+
+@app.route('/email/new', methods=['POST'])
+def add_newEmail():
+        request_body=request.json  
+        test_email= Exam_session.query.filter_by(id=request_body['id']).first()
+        test=False 
+        if test_email is None:
+            newExam=Exam_session (date=request_body['date'], score=request_body['score'],employee_id= request_body['employee_id'],name= request_body['name'], content= request_body['content'])
+            db.session.add(newExam)
+            db.session.commit()
+            return jsonify(f"Success"), 200 
+        else:     
+             return jsonify(test), 450 #it exist already
+
+
+
+@app.route('/exam/new', methods=['POST'])
+def add_newExam():
+        request_body=request.json  
+        test_user= User.query.filter_by(id=request_body['id']).first()
+        if(test_user):
+            newExam=Exam_session ( date=request_body['date'], score=request_body['score'],employee_id= request_body['employee_id'])
+            db.session.add(newExam)
+            db.session.commit()
+            return jsonify(f"Success"), 200      
+
+
+# to list every record in our database
+
+@app.route('/exam/all', methods=['GET'])
+def get_all_exam():
+
+    all_exam= Exam_session.query.all()
+    final= list(map(lambda x: x.serialize(), all_exam))
+   
+    return  jsonify(final)
+        
+@app.route('/email/all', methods=['GET'])
+def get_all_email():
+
+    all_email= Email_template.query.all()
+    final= list(map(lambda x: x.serialize(), all_email))
+   
+    return  jsonify(final)
+
+        
+@app.route('/user/all', methods=['GET'])
+def get_all_user():
+
+    all_user= User.query.all()
+    final= list(map(lambda x: x.serialize(), all_user))
+   
+    return  jsonify(final)
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
