@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Email_template, Exam_session,Category
+from models import db, User, Email_template, Exam_session, Management
 
 
 app = Flask(__name__)
@@ -50,13 +50,13 @@ def sitemap():
 def login_test():
         request_body=request.json
         
-        test_user= User.query.filter_by(email=request_body['username']).first()
+        test_user= Management.query.filter_by(email=request_body['username']).first()
         test=False 
         if test_user is None:
            return jsonify(test)
            
         
-        test_password= User.query.filter_by(email=request_body['username']).first().password
+        test_password= Management.query.filter_by(email=request_body['username']).first().password
         #test_name= User.query.filter_by(email=request_body[0]).first().fullname
     
         if str(test_password)==request_body['password']:  
@@ -70,7 +70,7 @@ def add_newEmail():
         test_email= Exam_session.query.filter_by(id=request_body['id']).first()
         test=False 
         if test_email is None:
-            newExam=Exam_session (date=request_body['date'], score=request_body['score'],employee_id= request_body['employee_id'],name= request_body['name'], content= request_body['content'])
+            newExam=Exam_session (name= request_body['name'], content= request_body['content'], Category=request_body['1'])
             db.session.add(newExam)
             db.session.commit()
             return jsonify(f"Success"), 200 
@@ -79,26 +79,26 @@ def add_newEmail():
 
 
 
-@app.route('/exam/new', methods=['POST'])
-def add_newExam():
-        request_body=request.json  
-        test_user= User.query.filter_by(id=request_body['id']).first()
-        if(test_user):
-            newExam=Exam_session ( date=request_body['date'], score=request_body['score'],employee_id= request_body['employee_id'])
-            db.session.add(newExam)
-            db.session.commit()
-            return jsonify(f"Success"), 200      
+# @app.route('/exam/new', methods=['POST'])
+# def add_newExam():
+#         request_body=request.json  
+#         test_user= User.query.filter_by(id=request_body['id']).first()
+#         if(test_user):
+#             newExam=Exam_session ( date=request_body['date'], score=request_body['score'],employee_id= request_body['employee_id'])
+#             db.session.add(newExam)
+#             db.session.commit()
+#             return jsonify(f"Success"), 200      
 
 
 # to list every record in our database
 
-@app.route('/exam/all', methods=['GET'])
-def get_all_exam():
+# @app.route('/exam/all', methods=['GET'])
+# def get_all_exam():
 
-    all_exam= Exam_session.query.all()
-    final= list(map(lambda x: x.serialize(), all_exam))
+#     all_exam= Exam_session.query.all()
+#     final= list(map(lambda x: x.serialize(), all_exam))
    
-    return  jsonify(final)
+#     return  jsonify(final)
         
 @app.route('/email/all', methods=['GET'])
 def get_all_email():
@@ -108,16 +108,63 @@ def get_all_email():
    
     return  jsonify(final)
 
-        
-@app.route('/user/all', methods=['GET'])
-def get_all_user():
+@app.route('/email/edit/id', methods=['post'])
+def update_email():
+    request_body=request.json 
+    db.session.query(Email_template).filter_by(id=request_body['templateId']).update({"content":request_body['content']})
+    db.session.commit()  
 
-    all_user= User.query.all()
+    all_email= Email_template.query.all()
+    final= list(map(lambda x: x.serialize(), all_email))
+   
+    return  jsonify(final)
+
+        
+@app.route('/user/all/', methods=['GET'])
+def get_all_user(): 
+    all_user= User.query.filter_by(is_active=True).all()
     final= list(map(lambda x: x.serialize(), all_user))
    
     return  jsonify(final)
 
 
+# @app.route('/user/get/id', methods=['GET'])
+# def get_this_user():
+#     print('hey! someone click on that linkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
+#     all_user= User.query.filter_by(is_active=True).all()
+#     final= list(map(lambda x: x.serialize(), all_user))
+   
+#     return  jsonify(final)
+
+@app.route('/user/delete/id', methods=['post'])
+def update_user():
+    request_body=request.json 
+    db.session.query(User).filter_by(email=request_body['email']).update({"is_active":False})
+    db.session.commit()      
+
+    get_User= User.query.filter_by(is_active=True).all()
+    final= list(map(lambda x: x.serialize(), get_User))
+   
+    return  jsonify(final),200
+
+
+@app.route('/user/add/new', methods=['post'])
+def add_user():
+     request_body=request.json 
+     test_user= User.query.filter_by(email=request_body['email']).first()
+     if(test_user):
+        db.session.query(User).filter_by(email=request_body['email']).update({"is_active":True})
+        db.session.commit()  
+    
+     else:
+        newU=User(email=request_body['email'])
+        db.session.add(newU)
+        db.session.commit()
+     all_user= User.query.filter_by(is_active=True).all()
+     final= list(map(lambda x: x.serialize(), all_user))
+     return  jsonify(final)
+       
+  
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
